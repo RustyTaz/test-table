@@ -2,6 +2,7 @@
     <div class="table-column">
       <span class="table-column__title" v-if="columnTitle">{{ columnTitle }}:</span>
         <slot></slot>
+        
     </div>
 </template>
 
@@ -17,14 +18,9 @@ const props = defineProps({
 
 <style lang="scss" scoped>
 .table-column {
+  border-right:  1px solid rgb(207, 207, 207);
   padding: 15px 0;
   position: relative;
-  &-image {
-    max-width: 100%;
-    @media screen and (max-width: 767px) {
-      max-width: 200px;
-    }
-  }
   &__title {
     margin-right: 5px;
     display: none;

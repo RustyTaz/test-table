@@ -1,75 +1,112 @@
 <template>
-	<h1 class="heading-1" @click="addColumn()">Таблица</h1>
+	<h2>Таблица by Рустам Тазяев</h2>
 	<div class="table-options">
 		<h2 class="table-options__header">Инспекция по ресторанам</h2>
-		<my-select></my-select>
-		<my-input placeholder="Поиск" v-model:value="searchQuery"></my-input>
+		<my-select :head-list="tableHeads" @set-column="setColums"></my-select>
+		<my-input
+			placeholder="Поиск по полям таблицы"
+			v-model:value="searchQuery"
+		></my-input>
 	</div>
 	<base-table :head="tableHeads" :columnTemplates="tableSizeColumns">
 		<table-row
+			:rests="searchedRests"
 			v-for="rest in searchedRests"
 			:key="rest._id"
 			:columnTemplates="tableSizeColumns"
 		>
-			<table-column :columnTitle="tableHeads[0]">{{
-				rest.business_name
-			}}</table-column>
-			<table-column :columnTitle="tableHeads[1]">{{ rest.business_location }}</table-column>
-			<table-column :columnTitle="tableHeads[2]">{{ rest.business_city }}</table-column>
-			<table-column :columnTitle="tableHeads[3]">{{ rest.inspection_date }}</table-column>
-			<table-column :columnTitle="tableHeads[4]">{{ rest.inspection_description }}</table-column>
+			<table-column
+				v-show="tableHeads[0].visible"
+				:columnTitle="tableHeads[0].name"
+				>{{ rest.business_name }}</table-column
+			>
+			<table-column
+				v-show="tableHeads[1].visible"
+				:columnTitle="tableHeads[1].name"
+				>{{ rest.business_address }}</table-column
+			>
+			<table-column
+				v-show="tableHeads[2].visible"
+				:columnTitle="tableHeads[2].name"
+				>{{ rest.business_city }}</table-column
+			>
+			<table-column
+				v-show="tableHeads[3].visible"
+				:columnTitle="tableHeads[3].name"
+				>{{ rest.business_phone_number }}</table-column
+			>
+			<table-column
+				v-show="tableHeads[4].visible"
+				:columnTitle="tableHeads[4].name"
+				>{{ rest.inspection_date }}</table-column
+			>
+			<table-column
+				v-show="tableHeads[5].visible"
+				:columnTitle="tableHeads[5].name"
+				>{{ rest.inspection_description }}</table-column
+			>
+			<table-column
+				v-show="tableHeads[6].visible"
+				:columnTitle="tableHeads[6].name"
+				>{{ rest.inspection_type }}</table-column
+			>
 		</table-row>
 	</base-table>
 </template>
 
 <script setup>
-//business_name название ресторана
-//business_location адрес ресторана
-//business_city город
-//inspection_date дата инспекции
-//inspection_description статус
-//business_phone_number номер
-//inspection_type тип инспекции
 import BaseTable from "@/components/Table/BaseTable.vue";
 import TableRow from "@/components/Table/TableRow.vue";
 import TableColumn from "@/components/Table/TableColumn.vue";
 import { useRestaurants } from "@/hooks/useRestaurants.js";
-import {  useSearchRestaurants } from "@/hooks/useSearchRestaurants.js";
+import { useSearchRestaurants } from "@/hooks/useSearchRestaurants.js";
 import MySelect from "@/components/MySelect.vue";
 import MyInput from "@/components/MyInput.vue";
-import { ref, toRaw, onMounted, reactive } from "vue";
-import axios from "axios";
+import { ref, toRaw, onMounted, reactive, computed } from "vue";
 
-const tableHeads = [
-	"Название ресторана",
-	"Адрес ресторана",
-	"Город",
-	"Дата инспекции",
-	"Статус инспекции",
-];
-const tableSizeColumns = "2fr 300px 1fr 1fr 1fr ";
 const rests = ref([]);
-//const searchQuery = ref('');
-
-//const tableHeads = ['Id', 'Author', 'Title', 'Cover', '']
-//const tableSizeColumns = '50px 1fr 2fr 150px 140px'
-
-const addColumn = () => {
-	rests.value.shift();
-	//console.log(tableHeads);
-};
+let tableHeads = ref([
+	{ name: "Название ресторана", visible: true },
+	{ name: "Адрес ресторана", visible: true },
+	{ name: "Город", visible: true },
+	{ name: "Номер организации", visible: true },
+	{ name: "Дата инспекции", visible: true },
+	{ name: "Статус инспекции", visible: true },
+	{ name: "Тип проведения инспекции", visible: true },
+]);
+let tableSizeColumns = ref("1fr 1fr 1fr 1fr 1fr 1fr 1fr");
 
 const getRest = async () => {
 	useRestaurants().then((r) => {
 		rests.value = r;
 		console.log(rests.value);
+		console.log(rests.value[0].inspection_description);
 	});
 };
+
+const { searchQuery, searchedRests } = useSearchRestaurants(rests);
+
+function setColums(column) {
+	console.log(column);
+	tableHeads.value[column].visible = !tableHeads.value[column].visible;
+
+	let arr = tableSizeColumns.value.split(" ");
+
+	if (tableHeads.value[column].visible === true) {
+		arr.push("1fr");
+		tableSizeColumns.value = arr.join(" ");
+		console.log(tableSizeColumns.value);
+	} else {
+		arr.pop();
+		tableSizeColumns.value = arr.join(" ");
+		console.log(tableSizeColumns.value);
+	}
+}
 
 onMounted(() => {
 	getRest();
 });
-const{searchQuery, searchedRests}= useSearchRestaurants(rests);
+
 </script>
 
 <style lang="scss" scoped>
@@ -80,12 +117,18 @@ const{searchQuery, searchedRests}= useSearchRestaurants(rests);
 	margin-top: 15px;
 
 	&-options {
+		background-color: #fff;
+		position: relative;
 		display: flex;
 		justify-content: space-around;
 		padding: 5px 5px 5px 5px;
+		border-top: 1px solid black;
+		border-bottom: 1px solid black;
 
 		@media screen and (max-width: 767px) {
-			display: inline-block;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
 		}
 
 		&__header {
