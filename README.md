@@ -1,4 +1,5 @@
 # test-table
+Adaptive table with search and column selection via Vue Composition API
 
 ## Project setup
 ```
